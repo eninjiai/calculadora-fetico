@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16a34a">
+<meta name="color-scheme" content="light dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Calculadora Fetico">
+<title>CALCULADORA FETICO</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2316a34a'/%3E%3Cg fill='%23fff'%3E%3Ccircle cx='5' cy='23' r='1.7'/%3E%3Ccircle cx='8.2' cy='15.2' r='1.7'/%3E%3Ccircle cx='16' cy='12' r='1.7'/%3E%3Ccircle cx='23.8' cy='15.2' r='1.7'/%3E%3Ccircle cx='27' cy='23' r='1.7'/%3E%3Ccircle cx='10.5' cy='23' r='1.7'/%3E%3Ccircle cx='16' cy='17.5' r='1.7'/%3E%3Ccircle cx='21.5' cy='23' r='1.7'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f3f8f4; --card:#ffffff; --field:#f7fbf8; --ink:#0d2b1c; --muted:#5b7767; --line:#d9e6dd;
+  --g:#16a34a; --g-d:#0e6b33; --g-soft:#e3f3e8; --on-g:#ffffff;
+  --warn:#8a4b00; --warn-bg:#fff3dc; --warn-line:#f1d29b;
+  --u0:#16a34a; --u1:#2f80d6; --u2:#d64545; --u3:#e0a21f; --u4:#8a9a92;
+  --shadow:0 1px 2px rgba(13,43,28,.05),0 8px 24px -12px rgba(13,43,28,.12);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#07120c; --card:#0e1c14; --field:#0a1710; --ink:#e4f2e9; --muted:#8aae9a; --line:#1b3226;
+    --g:#34d27b; --g-d:#86e8ae; --g-soft:#10281b; --on-g:#04210f;
+    --warn:#f5c97a; --warn-bg:#2a1f0a; --warn-line:#4d3a14;
+    --u0:#34d27b; --u1:#5aa2ee; --u2:#ef6a6a; --u3:#efb93f; --u4:#9db0a6;
+    --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Avenir Next","Segoe UI Variable Display","SF Pro Display",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  line-height:1.4; -webkit-font-smoothing:antialiased;
+}
+button,input{font:inherit;color:inherit}
+.app{max-width:1120px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom))}
+
+/* Cabecera */
+.top{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 0 6px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand svg{width:34px;height:34px;flex:none}
+.brand h1{margin:0;font-size:15px;font-weight:800;letter-spacing:.14em}
+.hero{padding:10px 0 6px}
+.centro{display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--line);padding-bottom:6px;transition:border-color .2s}
+.centro:focus-within{border-color:var(--g)}
+.centro input{
+  flex:1;min-width:0;border:0;background:transparent;outline:0;
+  font-size:clamp(26px,6.4vw,44px);font-weight:800;letter-spacing:-.01em;text-transform:uppercase;color:var(--ink);
+}
+.centro input::placeholder{color:var(--g);opacity:.55}
+.centro svg{width:22px;height:22px;flex:none;color:var(--g)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.chip{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 10px;font-size:14px}
+.chip i{width:10px;height:10px;border-radius:50%;flex:none}
+.chip b{font-size:17px;font-variant-numeric:tabular-nums}
+.chip.lead{border-color:var(--g);background:var(--g-soft)}
+
+/* Estructura */
+main{display:block}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:14px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:16px;font-weight:700;letter-spacing:-.005em}
+.card h2 small{font-weight:500;color:var(--muted);font-size:13px;margin-left:6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+.in{
+  width:100%;font-size:16px;font-variant-numeric:tabular-nums;padding:11px 12px;border:1px solid var(--line);
+  border-radius:12px;background:var(--field);outline:0;transition:border-color .15s,box-shadow .15s;
+}
+.in:focus{border-color:var(--g);box-shadow:0 0 0 3px color-mix(in srgb,var(--g) 22%,transparent)}
+.in.auto{color:var(--g-d)}
+.suffix{position:relative}
+.suffix .in{padding-right:34px}
+.suffix span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0 0;font-size:14px;color:var(--muted)}
+.kv b{color:var(--ink);font-variant-numeric:tabular-nums;font-size:15px}
+.sep{height:1px;background:var(--line);margin:14px 0}
+
+/* Comité */
+.comite{display:flex;align-items:center;gap:14px}
+.comite .in{width:104px;font-size:34px;font-weight:800;text-align:center;padding:8px 6px;border-radius:14px}
+.comite p{margin:0;font-size:14px;color:var(--muted);flex:1}
+.comite p b{display:block;color:var(--ink);font-size:16px;margin-bottom:2px}
+.link{background:none;border:0;color:var(--g-d);font-weight:600;font-size:13px;padding:6px 2px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.link[hidden]{display:none}
+.mini{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+.mini th{font-weight:500;color:var(--muted);text-align:right;padding:6px 0;font-size:13px}
+.mini th:first-child,.mini td:first-child{text-align:left}
+.mini td{padding:7px 0;text-align:right;font-variant-numeric:tabular-nums;border-top:1px solid var(--line)}
+
+/* Votos */
+.votes{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center}
+.votes .h{font-size:13px;color:var(--muted);padding:0 2px}
+.vname{display:flex;align-items:center;gap:8px;min-width:0}
+.vname i{width:12px;height:12px;border-radius:50%;flex:none}
+.vname .in{border-color:transparent;background:transparent;padding:10px 4px;font-weight:600}
+.vname .in:focus{background:var(--field)}
+.votes .tot{font-size:14px;color:var(--muted);padding:2px}
+.votes .val{font-variant-numeric:tabular-nums;font-weight:700;padding:2px 4px;text-align:right}
+.votes .span{grid-column:1/-1;height:1px;background:var(--line);margin:4px 0}
+
+/* Resultados */
+.hemi{display:block;width:100%;height:auto;max-height:290px}
+.hemi circle{transition:fill .35s ease}
+.hemi text{font-family:inherit;fill:var(--ink)}
+.legend{margin-top:6px}
+.lg{display:grid;grid-template-columns:14px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.lg i{width:12px;height:12px;border-radius:50%}
+.lg .n{font-weight:700;font-size:16px}
+.lg .s{display:block;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.lg .t{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.lg.zero .t,.lg.zero .n{opacity:.45}
+.foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:2px solid var(--line);padding-top:12px;font-size:14px;color:var(--muted)}
+.foot b{color:var(--ink);font-variant-numeric:tabular-nums}
+.warn{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);border-radius:14px;padding:12px 14px;margin-top:14px;font-size:14px}
+.warn[hidden]{display:none}
+.warn p{margin:0}
+.warn p+p{margin-top:6px}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:12px;
+  padding:11px 16px;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,transform .1s;
+}
+.btn:hover{border-color:var(--g)}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--g);border-color:var(--g);color:var(--on-g)}
+.btn.primary:hover{background:var(--g-d);border-color:var(--g-d);color:#fff}
+.btn svg{width:18px;height:18px}
+
+/* Detalle */
+.scroll{overflow-x:auto;margin:0 -4px;padding:0 4px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;min-width:420px}
+.tbl th{font-weight:500;color:var(--muted);text-align:right;padding:6px 8px;font-size:13px;white-space:nowrap}
+.tbl td{padding:9px 8px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left;padding-left:0}
+.tbl td:first-child{font-weight:600}
+.tbl td:first-child i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+.tbl .tot{font-weight:800;color:var(--g-d)}
+.tbl tfoot td{border-top:2px solid var(--line);font-weight:700}
+.badge{display:inline-block;min-width:24px;padding:1px 7px;border-radius:999px;background:var(--g);color:var(--on-g);font-size:12px;font-weight:700;margin-left:3px}
+.note{font-size:13px;color:var(--muted);margin:10px 0 0}
+.sum{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-top:10px}
+.sum b{color:var(--ink)}
+
+/* Navegación inferior (móvil) */
+.tabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;gap:6px;justify-content:center;
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--card) 92%,transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);
+}
+.tab{
+  flex:1;max-width:200px;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:transparent;
+  padding:8px 6px;border-radius:14px;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;
+}
+.tab svg{width:22px;height:22px}
+.tab[aria-selected="true"]{background:var(--g-soft);color:var(--g-d)}
+:focus-visible{outline:2px solid var(--g);outline-offset:2px}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;pointer-events:none;
+  background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;transition:all .25s;z-index:20;
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (min-width:960px){
+  .app{padding-bottom:48px}
+  .tabs{display:none}
+  main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 20px;align-items:start}
+  .panel{display:block}
+  #p-datos{grid-column:1;grid-row:1/3}
+  #p-res{grid-column:2;grid-row:1;position:sticky;top:8px}
+  #p-det{grid-column:2;grid-row:2}
+  .toast{bottom:28px}
+}
+@media (max-width:380px){
+  .lg .t{font-size:26px}
+  .comite .in{width:88px;font-size:30px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{
+  :root{--bg:#fff;--card:#fff;--field:#fff;--ink:#000;--line:#bbb;--muted:#444}
+  .tabs,.btns,.link,.toast{display:none!important}
+  .panel{display:block!important;position:static!important}
+  main{display:block!important}
+  .card{box-shadow:none;break-inside:avoid}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--g)"/><g fill="#fff"><circle cx="5" cy="23" r="1.7"/><circle cx="8.2" cy="15.2" r="1.7"/><circle cx="16" cy="12" r="1.7"/><circle cx="23.8" cy="15.2" r="1.7"/><circle cx="27" cy="23" r="1.7"/><circle cx="10.5" cy="23" r="1.7"/><circle cx="16" cy="17.5" r="1.7"/><circle cx="21.5" cy="23" r="1.7"/></g></svg>
+      <h1>CALCULADORA FETICO</h1>
+    </div>
+  </header>
+
+  <section class="hero">
+    <label class="centro" for="centro">
+      <input id="centro" type="text" placeholder="PONER EL CENTRO" autocomplete="off" maxlength="80" aria-label="Centro de trabajo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+    </label>
+    <div class="chips" id="chips" aria-live="polite"></div>
+  </section>
+
+  <main>
+    <!-- DATOS -->
+    <section class="panel active" id="p-datos" aria-label="Datos">
+      <div class="card">
+        <h2>Plantilla</h2>
+        <div class="row2">
+          <div class="field"><label for="plEsp">Especialistas</label><input class="in" id="plEsp" inputmode="numeric" autocomplete="off"></div>
+          <div class="field"><label for="plTec">Técnicos</label><input class="in" id="plTec" inputmode="numeric" autocomplete="off"></div>
+        </div>
+        <div class="kv"><span>Plantilla total</span><b id="plTot">0</b></div>
+        <div class="sep"></div>
+        <div class="field">
+          <label for="pct">Reducción de plantilla (−%)</label>
+          <div class="suffix"><input class="in" id="pct" inputmode="decimal" autocomplete="off"><span>%</span></div>
+        </div>
+        <div class="kv"><span>Especialistas −%</span><b id="plEspR">0</b></div>
+        <div class="kv"><span>Técnicos −%</span><b id="plTecR">0</b></div>
+      </div>
+
+      <div class="card">
+        <h2>Comité de empresa</h2>
+        <div class="comite">
+          <input class="in" id="comite" inputmode="numeric" autocomplete="off" aria-label="Número de delegados del comité">
+          <p><b>delegados</b><span id="escala"></span><br><button class="link" id="comiteAuto" type="button" hidden>Volver al cálculo automático</button></p>
+        </div>
+        <div class="sep"></div>
+        <div class="row2">
+          <div class="field"><label for="segEsp">Delegados especialistas</label><input class="in" id="segEsp" inputmode="numeric" autocomplete="off"></div>
+          <div class="field"><label for="segTec">Delegados técnicos</label><input class="in" id="segTec" inputmode="numeric" autocomplete="off"></div>
+        </div>
+        <button class="link" id="segAuto" type="button" hidden>Volver al reparto automático</button>
+        <table class="mini">
+          <thead><tr><th></th><th>Proporcional</th><th>VxD</th><th>VxD −%</th></tr></thead>
+          <tbody>
+            <tr><td>Especialistas</td><td id="propE">0</td><td id="vxdE">0</td><td id="vxdER">0</td></tr>
+            <tr><td>Técnicos</td><td id="propT">0</td><td id="vxdT">0</td><td id="vxdTR">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Votos por candidatura <small>toca un nombre para cambiarlo</small></h2>
+        <div class="votes" id="votes">
+          <div class="h"></div><div class="h">Especialistas</div><div class="h">Técnicos</div>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button class="btn" id="btnClear" type="button">Limpiar datos</button>
+        <button class="btn" id="btnExample" type="button">Cargar ejemplo</button>
+      </div>
+    </section>
+
+    <!-- RESULTADOS -->
+    <section class="panel" id="p-res" aria-label="Resultados">
+      <div class="warn" id="warn" hidden></div>
+      <div class="card">
+        <h2>Delegados por candidatura</h2>
+        <svg class="hemi" id="hemi" viewBox="0 0 340 180" role="img" aria-label="Reparto de delegados en hemiciclo"></svg>
+        <div class="legend" id="legend"></div>
+        <div class="foot" id="foot"></div>
+      </div>
+      <div class="btns">
+        <button class="btn primary" id="btnCopy" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copiar resumen
+        </button>
+        <button class="btn" id="btnPrint" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimir
+        </button>
+      </div>
+    </section>
+
+    <!-- DETALLE -->
+    <section class="panel" id="p-det" aria-label="Detalle del cálculo">
+      <div class="card">
+        <h2>Reparto de especialistas <small>por votos emitidos (VVE)</small></h2>
+        <div class="scroll"><table class="tbl" id="tE"></table></div>
+        <div class="sum" id="sE"></div>
+      </div>
+      <div class="card">
+        <h2>Reparto de técnicos <small>por votos emitidos (VVE)</small></h2>
+        <div class="scroll"><table class="tbl" id="tT"></table></div>
+        <div class="sum" id="sT"></div>
+      </div>
+      <div class="card">
+        <h2>Comparativa de bases <small>votos × delegados ÷ base</small></h2>
+        <div class="scroll"><table class="tbl" id="tCmpE"></table></div>
+        <div class="sep"></div>
+        <div class="scroll"><table class="tbl" id="tCmpT"></table></div>
+        <p class="note">El reparto final se calcula siempre sobre los votos emitidos (VVE), igual que en el Excel. Las otras dos bases son informativas.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="Secciones">
+  <button class="tab" role="tab" data-tab="p-datos" aria-selected="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16Z"/><path d="m13.5 6.5 4 4"/></svg>Datos</button>
+  <button class="tab" role="tab" data-tab="p-res" aria-selected="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 19a9 9 0 0 1 18 0"/><path d="M7 19a5 5 0 0 1 10 0"/><circle cx="12" cy="19" r="0.6"/></svg>Resultados</button>
+  <button class="tab" role="tab" data-tab="p-det" aria-selected="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>Detalle</button>
+</nav>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+// <CORE>
+const N_UNI = 5;
+const num = v => { const x = parseFloat(String(v).replace(',', '.')); return Number.isFinite(x) && x > 0 ? x : 0; };
+
+// Escala del Excel (fila 31): 5 + 4 + 4 + 4 + 4 + 2 (+2 por cada 1.000 adicionales)
+function escalaComite(plant){
+  if (plant < 50) return { total: 0, partes: [], personal: true };
+  const partes = [5];
+  if (plant > 100) partes.push(4);
+  if (plant > 250) partes.push(4);
+  if (plant > 500) partes.push(4);
+  if (plant > 750) partes.push(4);
+  if (plant > 1000) partes.push(2);
+  for (let k = 2000; plant > k; k += 1000) partes.push(2);
+  return { total: partes.reduce((a, b) => a + b, 0), partes, personal: false };
+}
+
+// Reparto entre especialistas y técnicos (proporcional, mayor resto)
+function repartoAuto(plEsp, plTec, comite){
+  const plant = plEsp + plTec;
+  if (!plant || !comite) return [0, 0];
+  const a = plEsp * comite / plant, b = plTec * comite / plant;
+  let fa = Math.floor(a), fb = Math.floor(b);
+  const rest = comite - fa - fb;
+  if (rest > 0) { if (b - fb > a - fa) fb += 1; else fa += 1; }
+  return [fa, fb];
+}
+
+// Reparto por cociente + restos (columnas J..U y Z..AJ del Excel), con 5 rondas de restos
+function repartir(J, seats){
+  const K = J.map(x => Math.floor(x));
+  const L = J.map((x, i) => x - K[i]);
+  const extra = J.map(() => 0);
+  const rounds = [];
+  if (!J.some(x => x > 0)) return { J, K, L, rest: 0, rounds, extra, total: J.map(() => 0) };
+  let remaining = seats - K.reduce((a, b) => a + b, 0);
+  const rest0 = remaining;
+  let frac = L.slice();
+  for (let r = 0; r < 5; r++){
+    const max = Math.max(...frac);
+    const flag = remaining >= 1 ? 1 : 0;
+    const aw = frac.map(f => f === max ? flag : 0);
+    rounds.push({ frac: frac.slice(), max, flag, aw });
+    aw.forEach((a, i) => extra[i] += a);
+    remaining -= aw.reduce((a, b) => a + b, 0);
+    frac = frac.map(f => f === max ? 0 : f);
+  }
+  return { J, K, L, rest: rest0, rounds, extra, total: K.map((k, i) => k + extra[i]) };
+}
+
+function calcular(S){
+  const plEsp = num(S.plEsp), plTec = num(S.plTec), pct = Math.min(100, num(S.pct));
+  const plant = plEsp + plTec;
+  const esc = escalaComite(plant);
+  const comiteAuto = esc.total;
+  const comite = S.comite == null ? comiteAuto : Math.round(num(S.comite));
+  const propE = plant ? plEsp * comite / plant : 0;
+  const propT = plant ? plTec * comite / plant : 0;
+  const auto = repartoAuto(plEsp, plTec, comite);
+  const segEsp = S.segEsp == null ? auto[0] : Math.round(num(S.segEsp));
+  const segTec = S.segTec == null ? auto[1] : Math.round(num(S.segTec));
+  const plEspR = plEsp - plEsp * pct / 100;
+  const plTecR = plTec - plTec * pct / 100;
+  const ve = S.ve.map(num), vt = S.vt.map(num);
+  const vveE = ve.reduce((a, b) => a + b, 0), vveT = vt.reduce((a, b) => a + b, 0);
+  const div = (a, b) => b ? a / b : 0;
+  const mk = (v, seats, base) => v.map(x => div(x * seats, base));
+  const E = { plant: mk(ve, segEsp, plEsp), red: mk(ve, segEsp, plEspR), vve: mk(ve, segEsp, vveE) };
+  const T = { plant: mk(vt, segTec, plTec), red: mk(vt, segTec, plTecR), vve: mk(vt, segTec, vveT) };
+  const rE = repartir(E.vve, segEsp), rT = repartir(T.vve, segTec);
+  const total = rE.total.map((x, i) => x + rT.total[i]);
+  return {
+    plEsp, plTec, plant, pct, esc, comiteAuto, comite, propE, propT, auto, segEsp, segTec, plEspR, plTecR,
+    ve, vt, vveE, vveT, partE: div(vveE, plEsp), partT: div(vveT, plTec),
+    vxdE: div(plEsp, segEsp), vxdER: div(plEspR, segEsp), vxdT: div(plTec, segTec), vxdTR: div(plTecR, segTec),
+    E, T, rE, rT, total,
+    sumE: rE.total.reduce((a, b) => a + b, 0), sumT: rT.total.reduce((a, b) => a + b, 0)
+  };
+}
+// </CORE>
+
+/* ---------- Estado ---------- */
+const STORE = 'fetico-calc-v1';
+const EJEMPLO = () => ({
+  centro: '', pct: 23, plEsp: 1022, plTec: 250, comite: null, segEsp: null, segTec: null,
+  names: ['Fetico', 'Fasga', 'UGT', 'CGT', 'Otros'],
+  ve: [320, 450, 100, 92, 0], vt: [45, 90, 25, 5, 0]
+});
+let S = EJEMPLO();
+const store = {
+  get(){ try { return localStorage.getItem(STORE); } catch (e) { return null; } },
+  set(v){ try { localStorage.setItem(STORE, v); } catch (e) {} }
+};
+try {
+  const saved = JSON.parse(store.get() || 'null');
+  if (saved && Array.isArray(saved.ve) && Array.isArray(saved.vt)) S = Object.assign(EJEMPLO(), saved);
+} catch (e) {}
+
+/* ---------- Utilidades ---------- */
+const $ = s => document.querySelector(s);
+const nf = d => new Intl.NumberFormat('es-ES', { minimumFractionDigits: d, maximumFractionDigits: d });
+const f0 = nf(0), f2 = nf(2), pf = new Intl.NumberFormat('es-ES', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const col = i => `var(--u${i})`;
+const nameOf = i => (S.names[i] || '').trim() || `Candidatura ${i + 1}`;
+function sync(el, v){ if (document.activeElement !== el) el.value = v; }
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 1900);
+}
+function persist(){ store.set(JSON.stringify(S)); }
+
+/* ---------- Construcción de la rejilla de votos ---------- */
+(function buildVotes(){
+  const g = $('#votes'); let h = '';
+  for (let i = 0; i < N_UNI; i++){
+    h += `<div class="vname"><i style="background:${col(i)}"></i><input class="in" id="un${i}" aria-label="Nombre de la candidatura ${i + 1}" maxlength="24" autocomplete="off"></div>
+          <input class="in" id="ve${i}" inputmode="numeric" aria-label="Votos especialistas" autocomplete="off">
+          <input class="in" id="vt${i}" inputmode="numeric" aria-label="Votos técnicos" autocomplete="off">`;
+  }
+  h += `<div class="span"></div>
+        <div class="tot">Votos emitidos</div><div class="val" id="vveE">0</div><div class="val" id="vveT">0</div>
+        <div class="tot">Participación</div><div class="val" id="partE">0</div><div class="val" id="partT">0</div>`;
+  g.insertAdjacentHTML('beforeend', h);
+})();
+
+function fillInputs(){
+  $('#centro').value = S.centro;
+  $('#plEsp').value = S.plEsp; $('#plTec').value = S.plTec; $('#pct').value = S.pct;
+  for (let i = 0; i < N_UNI; i++){
+    $('#un' + i).value = S.names[i]; $('#ve' + i).value = S.ve[i]; $('#vt' + i).value = S.vt[i];
+  }
+}
+
+/* ---------- Hemiciclo ---------- */
+let hemiKey = '';
+function hemiciclo(counts){
+  const svg = $('#hemi');
+  const n = counts.reduce((a, b) => a + b, 0);
+  if (!n){
+    hemiKey = '';
+    svg.innerHTML = `<text x="170" y="150" text-anchor="middle" font-size="14" style="fill:var(--muted)">Introduce los votos para ver el reparto</text>`;
+    return;
+  }
+  const rows = Math.max(1, Math.min(9, Math.round(Math.sqrt(n / 2.3))));
+  const cx = 170, cy = 168, rOut = 152, rIn = rows === 1 ? 118 : 64;
+  const radii = rows === 1 ? [118] : Array.from({ length: rows }, (_, i) => rIn + (rOut - rIn) * i / (rows - 1));
+  const sr = radii.reduce((a, b) => a + b, 0);
+  const per = radii.map(r => Math.max(1, Math.round(n * r / sr)));
+  per[per.length - 1] += n - per.reduce((a, b) => a + b, 0);
+  const dr = rows > 1 ? (rOut - rIn) / (rows - 1) : 44;
+  let rad = dr * 0.42;
+  radii.forEach((r, i) => { rad = Math.min(rad, Math.PI * r / per[i] * 0.42); });
+  const key = [n, rows, per.join('.')].join('|');
+  const seats = [];
+  radii.forEach((r, i) => {
+    for (let k = 0; k < per[i]; k++){
+      const ang = Math.PI * (1 - (k + 0.5) / per[i]);
+      seats.push({ ang, x: cx + r * Math.cos(ang), y: cy - r * Math.sin(ang), r });
+    }
+  });
+  seats.sort((a, b) => b.ang - a.ang || a.r - b.r);
+  const fills = [];
+  counts.forEach((c, i) => { for (let k = 0; k < c; k++) fills.push(col(i)); });
+  if (key === hemiKey){
+    svg.querySelectorAll('circle').forEach((c, i) => c.setAttribute('fill', fills[i]));
+  } else {
+    hemiKey = key;
+    svg.innerHTML = seats.map((s, i) => `<circle cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="${rad.toFixed(1)}" fill="${fills[i]}"/>`).join('') +
+      `<text x="${cx}" y="${cy - 14}" text-anchor="middle" font-size="40" font-weight="800">${n}</text>` +
+      `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="12" style="fill:var(--muted)">delegados</text>`;
+  }
+  const t = svg.querySelector('text'); if (t) t.textContent = n;
+}
+
+/* ---------- Actualización ---------- */
+let last = null;
+function update(){
+  const c = calcular(S); last = c;
+
+  $('#plTot').textContent = f0.format(c.plant);
+  $('#plEspR').textContent = f2.format(c.plEspR);
+  $('#plTecR').textContent = f2.format(c.plTecR);
+
+  const cm = $('#comite');
+  sync(cm, c.comite); cm.classList.toggle('auto', S.comite == null);
+  $('#comiteAuto').hidden = S.comite == null;
+  $('#escala').textContent = c.esc.personal
+    ? 'Menos de 50 trabajadores: delegados de personal. Escribe el número a mano.'
+    : 'Escala: ' + c.esc.partes.join(' + ');
+  sync($('#segEsp'), c.segEsp); sync($('#segTec'), c.segTec);
+  $('#segEsp').classList.toggle('auto', S.segEsp == null); $('#segTec').classList.toggle('auto', S.segTec == null);
+  $('#segAuto').hidden = S.segEsp == null && S.segTec == null;
+  $('#propE').textContent = f2.format(c.propE); $('#propT').textContent = f2.format(c.propT);
+  $('#vxdE').textContent = f2.format(c.vxdE); $('#vxdER').textContent = f2.format(c.vxdER);
+  $('#vxdT').textContent = f2.format(c.vxdT); $('#vxdTR').textContent = f2.format(c.vxdTR);
+
+  $('#vveE').textContent = f0.format(c.vveE); $('#vveT').textContent = f0.format(c.vveT);
+  $('#partE').textContent = pf.format(c.partE); $('#partT').textContent = pf.format(c.partT);
+
+  // Chips
+  const max = Math.max(...c.total);
+  $('#chips').innerHTML = c.total.map((t, i) =>
+    `<span class="chip${t === max && t > 0 ? ' lead' : ''}"><i style="background:${col(i)}"></i>${esc(nameOf(i))} <b>${t}</b></span>`).join('');
+
+  // Resultados
+  hemiciclo(c.total);
+  $('#legend').innerHTML = c.total.map((t, i) =>
+    `<div class="lg${t ? '' : ' zero'}"><i style="background:${col(i)}"></i>
+      <div><span class="n">${esc(nameOf(i))}</span><span class="s">Especialistas ${c.rE.total[i]} · Técnicos ${c.rT.total[i]}</span></div>
+      <div class="t">${t}</div></div>`).join('');
+  const sum = c.total.reduce((a, b) => a + b, 0);
+  $('#foot').innerHTML = `<span>Especialistas <b>${c.sumE}</b></span><span>Técnicos <b>${c.sumT}</b></span><span>Total <b>${sum}</b></span>`;
+
+  // Avisos
+  const w = [];
+  if (c.esc.personal && S.comite == null) w.push('Con menos de 50 trabajadores no hay comité: se eligen delegados de personal. Indica a mano el número de delegados.');
+  if (c.segEsp + c.segTec !== c.comite) w.push(`Los delegados de especialistas (${c.segEsp}) y técnicos (${c.segTec}) suman ${c.segEsp + c.segTec}, y el comité es de ${c.comite}.`);
+  if (c.sumE !== c.segEsp && c.vveE > 0) w.push(`Empate en los restos de especialistas: se han asignado ${c.sumE} delegados de ${c.segEsp}. Revísalo a mano.`);
+  if (c.sumT !== c.segTec && c.vveT > 0) w.push(`Empate en los restos de técnicos: se han asignado ${c.sumT} delegados de ${c.segTec}. Revísalo a mano.`);
+  if (c.vveE > c.plEsp) w.push('Los votos de especialistas superan la plantilla de especialistas.');
+  if (c.vveT > c.plTec) w.push('Los votos de técnicos superan la plantilla de técnicos.');
+  const wb = $('#warn'); wb.hidden = !w.length; wb.innerHTML = w.map(x => `<p>${esc(x)}</p>`).join('');
+
+  // Detalle
+  detalle('#tE', '#sE', c.rE, c.segEsp);
+  detalle('#tT', '#sT', c.rT, c.segTec);
+  comparativa('#tCmpE', 'Especialistas', c.E);
+  comparativa('#tCmpT', 'Técnicos', c.T);
+  persist();
+}
+
+function detalle(tid, sid, r, seats){
+  let h = `<thead><tr><th>Candidatura</th><th>Cociente</th><th>Enteros</th><th>Resto</th><th>Restos</th><th>Total</th></tr></thead><tbody>`;
+  for (let i = 0; i < N_UNI; i++){
+    const got = r.rounds.map((x, k) => x.aw[i] ? `<span class="badge">${k + 1}º</span>` : '').join('');
+    h += `<tr><td><i style="background:${col(i)}"></i>${esc(nameOf(i))}</td><td>${f2.format(r.J[i])}</td><td>${r.K[i]}</td><td>${f2.format(r.L[i])}</td><td>${got || '–'}</td><td class="tot">${r.total[i]}</td></tr>`;
+  }
+  const tot = r.total.reduce((a, b) => a + b, 0);
+  h += `</tbody><tfoot><tr><td>Suma</td><td></td><td>${r.K.reduce((a, b) => a + b, 0)}</td><td></td><td>${r.extra.reduce((a, b) => a + b, 0)}</td><td class="tot">${tot}</td></tr></tfoot>`;
+  $(tid).innerHTML = h;
+  $(sid).innerHTML = `<span>Delegados a repartir <b>${seats}</b></span><span>Enteros <b>${r.K.reduce((a, b) => a + b, 0)}</b></span><span>Restos por repartir <b>${r.rest}</b></span>`;
+}
+function comparativa(tid, titulo, o){
+  let h = `<thead><tr><th>${titulo}</th><th>x Plantilla</th><th>x −%</th><th>x VVE</th></tr></thead><tbody>`;
+  for (let i = 0; i < N_UNI; i++){
+    h += `<tr><td><i style="background:${col(i)}"></i>${esc(nameOf(i))}</td><td>${f2.format(o.plant[i])}</td><td>${f2.format(o.red[i])}</td><td>${f2.format(o.vve[i])}</td></tr>`;
+  }
+  $(tid).innerHTML = h + '</tbody>';
+}
+
+/* ---------- Eventos ---------- */
+function bind(id, fn){ $(id).addEventListener('input', e => { fn(e.target.value); update(); }); }
+bind('#centro', v => S.centro = v);
+bind('#plEsp', v => S.plEsp = v);
+bind('#plTec', v => S.plTec = v);
+bind('#pct', v => S.pct = v);
+for (let i = 0; i < N_UNI; i++){
+  bind('#un' + i, v => S.names[i] = v);
+  bind('#ve' + i, v => S.ve[i] = v);
+  bind('#vt' + i, v => S.vt[i] = v);
+}
+bind('#comite', v => { S.comite = v.trim() === '' ? null : v; });
+bind('#segEsp', v => {
+  if (v.trim() === '') { S.segEsp = null; S.segTec = null; return; }
+  S.segEsp = v;
+  if (S.segTec == null) S.segTec = Math.max(0, calcular(S).comite - Math.round(num(v)));
+});
+bind('#segTec', v => {
+  if (v.trim() === '') { S.segEsp = null; S.segTec = null; return; }
+  S.segTec = v;
+  if (S.segEsp == null) S.segEsp = Math.max(0, calcular(S).comite - Math.round(num(v)));
+});
+$('#comiteAuto').addEventListener('click', () => { S.comite = null; update(); });
+$('#segAuto').addEventListener('click', () => { S.segEsp = null; S.segTec = null; update(); });
+$('#btnClear').addEventListener('click', () => {
+  const names = S.names.slice(), pct = S.pct;
+  S = Object.assign(EJEMPLO(), { centro: '', pct, names, plEsp: 0, plTec: 0, ve: [0, 0, 0, 0, 0], vt: [0, 0, 0, 0, 0] });
+  fillInputs(); update(); toast('Datos limpiados');
+});
+$('#btnExample').addEventListener('click', () => {
+  const centro = S.centro; S = EJEMPLO(); S.centro = centro;
+  fillInputs(); update(); toast('Ejemplo cargado');
+});
+
+function resumen(){
+  const c = last; const L = [];
+  L.push('CALCULADORA FETICO' + (S.centro.trim() ? ' – ' + S.centro.trim().toUpperCase() : ''));
+  L.push(`Comité: ${c.comite} delegados (Especialistas ${c.segEsp} · Técnicos ${c.segTec})`);
+  L.push(`Plantilla: ${f0.format(c.plant)} (Especialistas ${f0.format(c.plEsp)} · Técnicos ${f0.format(c.plTec)})`);
+  L.push('');
+  c.total.forEach((t, i) => L.push(`${nameOf(i)}: ${t} (Esp. ${c.rE.total[i]} · Téc. ${c.rT.total[i]})`));
+  L.push('');
+  L.push(`Participación: Especialistas ${pf.format(c.partE)} · Técnicos ${pf.format(c.partT)}`);
+  return L.join('\n');
+}
+$('#btnCopy').addEventListener('click', async () => {
+  const txt = resumen();
+  try { await navigator.clipboard.writeText(txt); toast('Resumen copiado'); }
+  catch (e) {
+    const ta = document.createElement('textarea'); ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('Resumen copiado'); } catch (_) { toast('No se pudo copiar'); }
+    ta.remove();
+  }
+});
+$('#btnPrint').addEventListener('click', () => { try { window.print(); } catch (e) { toast('Imprimir no está disponible aquí'); } });
+
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t === b)));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === b.dataset.tab));
+  window.scrollTo({ top: 0 });
+}));
+
+fillInputs();
+update();
+
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
